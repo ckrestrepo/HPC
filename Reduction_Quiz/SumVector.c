@@ -122,7 +122,7 @@ int main ()
  for(int i = 0; i < 15; i++)
  {
 	printf("Ejecucion numero: %d\n", i);
-  	unsigned int l = pow(2,i); //Vector's length, variable in every execution to get the test values faster
+  unsigned int l = pow(2,i); //Vector's length, variable in every execution to get the test values faster
 	printf("Tamaño del vector: %d\n", l);
 	clock_t start, finish; //Clock variables
 	double elapsedSecuential, elapsedParallel, optimization;
@@ -154,5 +154,6 @@ int main ()
    resultCompare(sum, B);
    free(A);
    free(B);
+   printf("----------------------------------------------------\n");
  }
 }
