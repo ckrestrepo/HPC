@@ -62,7 +62,12 @@ int main()
     cudaError_t error = cudaSuccess;
     clock_t start, end, startGPU, endGPU;
     double cpu_time_used, gpu_time_used;
-    char h_M[] = {-1,0,1,-2,0,2,-1,0,1}, *d_M;
+
+    char h_M[] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};    // Gx
+    char v_M[] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};    // Gy
+
+    char *d_M;
+
     unsigned char *dataRawImage, *d_dataRawImage, *d_imageOutput, *h_imageOutput, *d_sobelOutput;
     Mat image;
     image = imread("./inputs/img1.jpg", 1);
@@ -104,7 +109,7 @@ int main()
         exit(-1);
     }
 
-    error = cudaMalloc((void**)&d_sobelOutput,sizeGray);
+    error = cudaMalloc((void**)&d_sobelOutput, sizeGray);
     if(error != cudaSuccess)
     {
         printf("Error reservando memoria para d_sobelOutput\n");
@@ -114,14 +119,14 @@ int main()
     dataRawImage = image.data;
 
     startGPU = clock();
-    error = cudaMemcpy(d_dataRawImage,dataRawImage,size, cudaMemcpyHostToDevice);
+    error = cudaMemcpy(d_dataRawImage, dataRawImage, size, cudaMemcpyHostToDevice);
     if(error != cudaSuccess)
     {
         printf("Error copiando los datos de dataRawImage a d_dataRawImage \n");
         exit(-1);
     }
 
-    error = cudaMemcpy(d_M,h_M,sizeof(char)*9, cudaMemcpyHostToDevice);
+    error = cudaMemcpy(d_M, h_M, sizeof(char)*9, cudaMemcpyHostToDevice);
     if(error != cudaSuccess)
     {
         printf("Error copiando los datos de h_M a d_M \n");
@@ -129,47 +134,32 @@ int main()
     }
 
     int blockSize = 32;
-    dim3 dimBlock(blockSize,blockSize,1);
-    dim3 dimGrid(ceil(width/float(blockSize)),ceil(height/float(blockSize)),1);
+    dim3 dimBlock(blockSize, blockSize, 1);
+    dim3 dimGrid(ceil(width/float(blockSize)), ceil(height/float(blockSize)), 1);
 
-    img2gray<<<dimGrid,dimBlock>>>(d_dataRawImage, width, height, d_imageOutput);
+    img2gray<<<dimGrid, dimBlock>>>(d_dataRawImage, width, height, d_imageOutput);
 
     cudaDeviceSynchronize();
-    sobelFilter<<<dimGrid,dimBlock>>>(d_imageOutput,width,height,3,d_M,d_sobelOutput);
-    cudaMemcpy(h_imageOutput,d_sobelOutput,sizeGray,cudaMemcpyDeviceToHost);
+    sobelFilter<<<dimGrid,dimBlock>>>(d_imageOutput, width, height, 3, d_M, d_sobelOutput);
+    cudaMemcpy(h_imageOutput, d_sobelOutput, sizeGray, cudaMemcpyDeviceToHost);
     endGPU = clock();
 
     Mat gray_image;
-    gray_image.create(height,width,CV_8UC1);
+    gray_image.create(height, width, CV_8UC1);
     gray_image.data = h_imageOutput;
 
     start = clock();
     Mat gray_image_opencv, grad_x, abs_grad_x;
     cvtColor(image, gray_image_opencv, CV_BGR2GRAY);
-    Sobel(gray_image_opencv,grad_x,CV_8UC1,1,0,3,1,0,BORDER_DEFAULT);
+    Sobel(gray_image_opencv, grad_x, CV_8UC1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
     convertScaleAbs(grad_x, abs_grad_x);
     end = clock();
 
 
     imwrite("./outputs/1088273734.png",gray_image);
 
-//    namedWindow(imageName, WINDOW_NORMAL);
-  //  namedWindow("Gray Image CUDA", WINDOW_NORMAL);
-   // namedWindow("Sobel Image OpenCV", WINDOW_NORMAL);
-
-    //imshow(imageName,image);
-    //imshow("Gray Image CUDA", gray_image);
-    //imshow("Sobel Image OpenCV",abs_grad_x);
-
-    //waitKey(0);
-
-    //free(dataRawImage);
     gpu_time_used = ((double) (endGPU - startGPU)) / CLOCKS_PER_SEC;
-    //printf("Tiempo Algoritmo Paralelo: %.10f\n",gpu_time_used);
     cpu_time_used = ((double) (end - start)) /CLOCKS_PER_SEC;
-    //printf("Tiempo Algoritmo OpenCV: %.10f\n",cpu_time_used);
-    //printf("La aceleración obtenida es de %.10fX\n",cpu_time_used/gpu_time_used);
-    printf("%.10f,%.10f\n",cpu_time_used,gpu_time_used);
 
     cudaFree(d_dataRawImage);
     cudaFree(d_imageOutput);
