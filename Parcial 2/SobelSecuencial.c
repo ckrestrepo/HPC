@@ -37,7 +37,7 @@ __global__ void sobelFilter(unsigned char *imageInput, int width, int height, un
         {
             if((N_start_point_col + j >=0 && N_start_point_col + j < width) \
                     &&(N_start_point_row + i >=0 && N_start_point_row + i < height)){
-                Pvalue += imageInput[(N_start_point_row + i)*width+(N_start_point_col + j)] * M[i*maskWidth+j];
+                Pvalue += imageInput[(N_start_point_row + i) * width + (N_start_point_col + j)] * M[i*maskWidth+j];
             }
         }
     }

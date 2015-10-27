@@ -10,6 +10,16 @@
 
 using namespace cv;
 
+unsigned char clamp(int value)
+{
+    if(value < 0)
+        value = 0;
+    else
+        if(value > 255)
+            value = 255;
+    return (unsigned char)value;
+}
+
 __global__ void img2gray(unsigned char *imageInput, int width, int height, unsigned char *imageOutput)
 {
     int row = blockIdx.y*blockDim.y+threadIdx.y;
@@ -22,16 +32,62 @@ __global__ void img2gray(unsigned char *imageInput, int width, int height, unsig
     }
 }
 
-int main(int argc, char ** argv )
+
+// Filtro de Sobel
+void sobelFilterSequential (unsigned char *imageInput, int width, int height, unsigned int maskWidth, char *Gx, char *Gy, unsigned char *imageOutput)
+{
+  int SUM, sumX, sumY;
+  for (int y = 0; y < height; ++y)
+  {
+    for (int x = 0; x < width; ++x)
+    {
+      sumX = 0;
+      sumY = 0;
+      // Image Boundaries
+      if (y == 0 || y == height - 1)
+        SUM = 0;
+      else if (x == 0 || x == width - 1)  
+        SUM = 0;
+      //:::::::::::::::::::::::::::::::://
+      else
+      {
+        // Convolution for X
+        for (int i = 0; i < maskWidth; ++i)
+        {
+          for (int j = 0; j < maskWidth; ++j)
+          {                                                                   // i o j
+            sumX = sumX + Gx[i * maskWidth + j] * imageInput[(x * width + i) + (y + j)];
+          }
+        }
+        // Convolution for Y
+        for (int i = 0; i < maskWidth; ++i)
+        {
+          for (int j = 0; j < maskWidth; ++j)
+          {
+            sumY = sumY + Gy[i * maskWidth + j] * imageInput[(x * width + i) + (y + j)];
+          }
+        }
+        // Bordes
+        SUM = sqrt(pow((double) sumX, 2) + pow((double) sumY, 2));
+      }
+      imageOutput[y * width + x] = clamp(SUM);
+    }
+  }
+}
+
+int main()
 {
   // Definicion de variables
-  unsigned char *dataRawImage, *d_dataRawImage, *d_imageOutput, *h_imageOutput, *d_sobelOutput;
+  unsigned char *dataRawImage, *h_imageOutput, *d_dataRawImage, *d_imageOutput;
 
-  // Definicion de Matrices para el eje X y eje Y
-  char GX[] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};   // Gx
-  char GY[] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};   // Gy
+  // Definicion de Matrices Horizontal y Vertical
+  char GX[] = {-1, 0, 1, 
+               -2, 0, 2, 
+               -1, 0, 1};   // Gx
 
-
+  char GY[] = {-1, -2, -1, 
+                0,  0,  0, 
+                1,  2,  1};   // Gy
 
   Mat image;
   image = imread("./inputs/img1.jpg", 1);
@@ -50,18 +106,18 @@ int main(int argc, char ** argv )
   int sizeGray = sizeof(unsigned char) * width * height;
 
   dataRawImage = (unsigned char*)malloc(size);
-  cudaMalloc((void**)&d_dataRawImage, size);
+  
+  cudaMalloc((void**)&d_dataRawImage,size);
 
   h_imageOutput = (unsigned char *)malloc(sizeGray);
-  cudaMalloc((void**)&d_imageOutput, sizeGray);
-
-  cudaMalloc((void**)&d_M,sizeof(char)*9);
-  cudaMalloc((void**)&d_sobelOutput, sizeGray);
- 
+  
   dataRawImage = image.data;
+  
+  printf("Width is: %d and height is: %d\n", width, height );
+  
+  cudaMalloc((void**)&d_imageOutput, sizeGray);
+ 
   cudaMemcpy(d_dataRawImage, dataRawImage, size, cudaMemcpyHostToDevice);
-
-  cudaMemcpy(d_M, h_M, sizeof(char)*9, cudaMemcpyHostToDevice);
 
   /*************************************************************************************/
   /************ Definicion para convertir la imagen a escala de grises *****************/
@@ -74,67 +130,8 @@ int main(int argc, char ** argv )
   img2gray<<<dimGrid, dimBlock>>>(d_dataRawImage, width, height, d_imageOutput);
 
   cudaDeviceSynchronize();
-  
-  printf("Width is: %d and height is: %d\n", width, height );
 
-  /************************************/
-  /** Llamada al algoritmo secuencial**/
-  /************************************/
-
-  void sobelFilterSequential (unsigned char *imageInput, int width, int height, unsigned int maskWidth,\
-        char *M,unsigned char *imageOutput)
-  {
-    myfile.open("conv.txt", ios::out);
-
-    int SUM, sumX, sumY;
-    for(int y = 0; y < height ; y++)
-    {
-      for(int x = 0; x < width ; x++)
-      {
-        sumX  = 0;
-        sumY  = 0;
-        //Image Boundaries
-        if(y == 0 || y == height -1)
-          SUM = 0;
-        else if(x == 0 || x == width - 1)
-          SUM = 0;
-        else
-        {
-        //Convolution for X
-          for(int i = -1; i < maskWidth; i++)
-          {
-            for(int j = -1; j < maskWidth; j++)
-            {
-              sumX = sumX + GX[j+1][i+1] * (int)image(x+j,y+i);
-            }
-          }
-        //Convolution for Y
-          for(int i = -1; i < maskWidth; i++)
-          {
-            for(int j = -1; j < maskWidth; j++)
-            {
-              sumY = sumY + GY[j+1][i+1] * (int)image(x + j, y + i);
-            }
-          }
-          //Edge strength
-          SUM = sqrt(pow((double)sumX, 2) + pow((double)sumY, 2));
-          //SUM = sumX + sumY;
-        }   
-        
-        if(SUM > 255) SUM = 255;
-        if(SUM < 0) SUM = 0;
-        //unsigned char newPixel = (255 - (unsigned char)(SUM));
-        px[y][x] = SUM;
-        myfile << px[y][x] << "\t";
-      }
-      myfile << "\n";
-    }
-
-    myfile.close();
-  }
-
-
-
+  sobelFilterSequential(d_imageOutput, width, height, 3, GX, GY, h_imageOutput);
 
   Mat gray_image;
   gray_image.create(height, width, CV_8UC1);
@@ -142,46 +139,14 @@ int main(int argc, char ** argv )
 
   Mat gray_image_opencv, grad_x, abs_grad_x;
   cvtColor(image, gray_image_opencv, CV_BGR2GRAY);
-
+  Sobel(gray_image_opencv, grad_x, CV_8UC1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
   convertScaleAbs(grad_x, abs_grad_x);
 
+  imwrite("./outputs/1088273734.png",gray_image);
 
-
-/////////////////////////////////////////////////////////
-  //-------------------------------------------------//
-/*
-  cout << argv[1] <<endl;
-  CImg <unsigned char> image(argv[1]); 
-
-  ofstream myfile;
-  myfile.open("pxl.txt", ios::out);
-  //Getting the raster data
-  int **px;
-  px = new  int *[width];
-  for(y = 0; y< height; y++)
-  {
-    px[y] = new  int [height];
-    for(x = 0; x<width; x++)
-    {
-      px[y][x] = image(x,y);
-      myfile << (unsigned char)image(x,y) << "\t";
-    }
-    myfile << "\n";
-  }
-  myfile.close();
-*/
-  //Deteccion de bordes utilizando el algoritmo
-
+  cudaFree(d_dataRawImage);
+  cudaFree(d_imageOutput);
   
-  CImg<unsigned char> oimage(width,height);
-  for(int y = 0; y < image.height(); y++)
-  {
-    for(int x = 0; x<image.width(); x++)
-    {
-      oimage(x,y) = px[y][x];
-    }
-  }
-  oimage.save_bmp("oima2ge.bmp");
   return 0;
 }
 
