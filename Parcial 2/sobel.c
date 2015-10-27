@@ -37,10 +37,10 @@ __global__ void img2gray(unsigned char *imageInput, int width, int height, unsig
 void sobelFilterSequential (unsigned char *imageInput, int width, int height, unsigned int maskWidth, char *Gx, char *Gy, unsigned char *imageOutput)
 {
   int SUM, sumX, sumY;
-  // Maneja las columnas
+  // Maneja las filas
   for (int y = 0; y < height; ++y)
   {
-    // Maneja las filas
+    // Maneja las columnas
     for (int x = 0; x < width; ++x)
     {
       sumX = 0;
@@ -57,7 +57,7 @@ void sobelFilterSequential (unsigned char *imageInput, int width, int height, un
         for (int i = 0; i < maskWidth; ++i)
         {
           for (int j = 0; j < maskWidth; ++j)
-          {                                                                   // i o j
+          {                                                                   
             sumX = sumX + Gx[i * maskWidth + j] * imageInput[(i * width + j) + (x - y)];
           }
         }
@@ -83,13 +83,9 @@ int main()
   unsigned char *dataRawImage, *h_imageOutput, *d_dataRawImage, *d_imageOutput;
 
   // Definicion de Matrices Horizontal y Vertical
-  char GX[] = {-1, 0, 1, 
-               -2, 0, 2, 
-               -1, 0, 1};   // Gx
+  char GX[] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};   // Gx
 
-  char GY[] = {-1, -2, -1, 
-                0,  0,  0, 
-                1,  2,  1};   // Gy
+  char GY[] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};   // Gy
   
   Mat image;
   image = imread("./inputs/img1.jpg", 1);
