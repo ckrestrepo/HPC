@@ -37,8 +37,10 @@ __global__ void img2gray(unsigned char *imageInput, int width, int height, unsig
 void sobelFilterSequential (unsigned char *imageInput, int width, int height, unsigned int maskWidth, char *Gx, char *Gy, unsigned char *imageOutput)
 {
   int SUM, sumX, sumY;
+  // Maneja las columnas
   for (int y = 0; y < height; ++y)
   {
+    // Maneja las filas
     for (int x = 0; x < width; ++x)
     {
       sumX = 0;
@@ -56,7 +58,7 @@ void sobelFilterSequential (unsigned char *imageInput, int width, int height, un
         {
           for (int j = 0; j < maskWidth; ++j)
           {                                                                   // i o j
-            sumX = sumX + Gx[i * maskWidth + j] * imageInput[(x * width + i) + (y + j)];
+            sumX = sumX + Gx[i * maskWidth + j] * imageInput[(i * width + j) + (x - y)];
           }
         }
         // Convolution for Y
@@ -64,7 +66,7 @@ void sobelFilterSequential (unsigned char *imageInput, int width, int height, un
         {
           for (int j = 0; j < maskWidth; ++j)
           {
-            sumY = sumY + Gy[i * maskWidth + j] * imageInput[(x * width + i) + (y + j)];
+            sumY = sumY + Gy[i * maskWidth + j] * imageInput[(i * width + j) + (x - y)];
           }
         }
         // Bordes
@@ -88,7 +90,7 @@ int main()
   char GY[] = {-1, -2, -1, 
                 0,  0,  0, 
                 1,  2,  1};   // Gy
-
+  
   Mat image;
   image = imread("./inputs/img1.jpg", 1);
 
@@ -119,9 +121,9 @@ int main()
  
   cudaMemcpy(d_dataRawImage, dataRawImage, size, cudaMemcpyHostToDevice);
 
-  /*************************************************************************************/
-  /************ Definicion para convertir la imagen a escala de grises *****************/
-  /*************************************************************************************/
+  ///////////////////////////////////////////////////////////////////////////////////////
+  ///////////// Definicion para convertir la imagen a escala de grises //////////////////
+  ///////////////////////////////////////////////////////////////////////////////////////
 
   int blockSize = 32;
   dim3 dimBlock(blockSize, blockSize, 1);
@@ -132,18 +134,18 @@ int main()
   cudaDeviceSynchronize();
 
   sobelFilterSequential(d_imageOutput, width, height, 3, GX, GY, h_imageOutput);
-
+  /*
   Mat gray_image;
   gray_image.create(height, width, CV_8UC1);
   gray_image.data = h_imageOutput;
-
+  
   Mat gray_image_opencv, grad_x, abs_grad_x;
   cvtColor(image, gray_image_opencv, CV_BGR2GRAY);
   Sobel(gray_image_opencv, grad_x, CV_8UC1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
   convertScaleAbs(grad_x, abs_grad_x);
-
+  
   imwrite("./outputs/1088273734.png",gray_image);
-
+  */
   cudaFree(d_dataRawImage);
   cudaFree(d_imageOutput);
   
