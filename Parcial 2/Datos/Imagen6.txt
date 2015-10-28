@@ -1,0 +1,63 @@
+... Secuencial ...
+
+Iteracion numero: 1
+El proceso secuencial tomo: 0.151022 en ejecutar
+ 
+Iteracion numero: 2
+El proceso secuencial tomo: 0.165064 en ejecutar
+ 
+Iteracion numero: 3
+El proceso secuencial tomo: 0.161784 en ejecutar
+ 
+Iteracion numero: 4
+El proceso secuencial tomo: 0.156235 en ejecutar
+ 
+Iteracion numero: 5
+El proceso secuencial tomo: 0.154143 en ejecutar
+ 
+Iteracion numero: 6
+El proceso secuencial tomo: 0.166087 en ejecutar
+ 
+Iteracion numero: 7
+El proceso secuencial tomo: 0.142518 en ejecutar
+ 
+Iteracion numero: 8
+El proceso secuencial tomo: 0.17297 en ejecutar
+ 
+Iteracion numero: 9
+El proceso secuencial tomo: 0.146683 en ejecutar
+ 
+Iteracion numero: 10
+El proceso secuencial tomo: 0.149075 en ejecutar
+ 
+Iteracion numero: 11
+El proceso secuencial tomo: 0.143637 en ejecutar
+ 
+Iteracion numero: 12
+El proceso secuencial tomo: 0.174025 en ejecutar
+ 
+Iteracion numero: 13
+El proceso secuencial tomo: 0.147888 en ejecutar
+ 
+Iteracion numero: 14
+El proceso secuencial tomo: 0.167908 en ejecutar
+ 
+Iteracion numero: 15
+El proceso secuencial tomo: 0.147794 en ejecutar
+ 
+Iteracion numero: 16
+El proceso secuencial tomo: 0.169458 en ejecutar
+ 
+Iteracion numero: 17
+El proceso secuencial tomo: 0.149214 en ejecutar
+ 
+Iteracion numero: 18
+El proceso secuencial tomo: 0.1438 en ejecutar
+ 
+Iteracion numero: 19
+El proceso secuencial tomo: 0.15857 en ejecutar
+ 
+Iteracion numero: 20
+El proceso secuencial tomo: 0.148455 en ejecutar
+ 
+El promedio de tiempo es de: 0.155817
