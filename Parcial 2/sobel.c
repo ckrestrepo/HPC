@@ -57,8 +57,19 @@ void sobelFilterSequential (unsigned char *imageInput, int width, int height, un
         for (int i = 0; i < maskWidth; ++i)
         {
           for (int j = 0; j < maskWidth; ++j)
-          {                                                                   
-            sumX = sumX + Gx[i * maskWidth + j] * imageInput[(i * width + j) + (x - y)];
+          {
+            if (y == 0 || y == height - 1) || x == 0 || x == width - 1)
+            {
+              if (i == 0 || j == 0)
+              {
+                sumX = sumX + Gx[i * maskWidth + j] * 0;
+              }
+              else
+              {
+                sumX = sumX + Gx[i * maskWidth + j] * imageInput[(x * width + y) + (j-i)*width]; //+ (x - y)];
+                //sumX = sumX + Gx[i * maskWidth + j] * imageInput[(i * width + j) + (x - y)];
+              }
+            }                                                                   
           }
         }
         // Convolution for Y
@@ -80,7 +91,7 @@ void sobelFilterSequential (unsigned char *imageInput, int width, int height, un
 int main()
 {
   // Definicion de variables
-  unsigned char *dataRawImage, *h_imageOutput, *d_dataRawImage, *d_imageOutput;
+  unsigned char *imageInput, *imageOutput;// *d_dataRawImage, *d_imageOutput;
 
   // Definicion de Matrices Horizontal y Vertical
   char GX[] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};   // Gx
@@ -88,7 +99,7 @@ int main()
   char GY[] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};   // Gy
   
   Mat image;
-  image = imread("./inputs/img1.jpg", 1);
+  image = imread("./inputs/img2.jpg", 0);
 
   if(!image.data)
   {
@@ -101,49 +112,57 @@ int main()
   int width = s.width;
   int height = s.height;
   int size = sizeof(unsigned char) * width * height * image.channels();
-  int sizeGray = sizeof(unsigned char) * width * height;
+  //int sizeGray = sizeof(unsigned char) * width * height;
 
-  dataRawImage = (unsigned char*)malloc(size);
-  
-  cudaMalloc((void**)&d_dataRawImage,size);
+  imageInput = (unsigned char*)malloc(size);
+  imageOutput = (unsigned char*)malloc(size);
 
-  h_imageOutput = (unsigned char *)malloc(sizeGray);
+  //cudaMalloc((void**)&d_dataRawImage, size);  
   
-  dataRawImage = image.data;
+  imageInput = image.data;
   
+  //cudaMalloc((void**)&d_imageOutput, sizeGray);
+
   printf("Width is: %d and height is: %d\n", width, height );
-  
-  cudaMalloc((void**)&d_imageOutput, sizeGray);
  
-  cudaMemcpy(d_dataRawImage, dataRawImage, size, cudaMemcpyHostToDevice);
+  //cudaMemcpy(d_dataRawImage, dataRawImage, size, cudaMemcpyHostToDevice);
 
   ///////////////////////////////////////////////////////////////////////////////////////
   ///////////// Definicion para convertir la imagen a escala de grises //////////////////
   ///////////////////////////////////////////////////////////////////////////////////////
 
-  int blockSize = 32;
-  dim3 dimBlock(blockSize, blockSize, 1);
-  dim3 dimGrid(ceil(width/float(blockSize)), ceil(height/float(blockSize)), 1);
+  //int blockSize = 32;
+  //dim3 dimBlock(blockSize, blockSize, 1);
+  //dim3 dimGrid(ceil(width/float(blockSize)), ceil(height/float(blockSize)), 1);
 
-  img2gray<<<dimGrid, dimBlock>>>(d_dataRawImage, width, height, d_imageOutput);
+  //img2gray<<<dimGrid, dimBlock>>>(d_dataRawImage, width, height, d_imageOutput);
 
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
 
-  sobelFilterSequential(d_imageOutput, width, height, 3, GX, GY, h_imageOutput);
+  //sobelFilterSequential(d_imageOutput, width, height, 3, GX, GY, h_imageOutput);
   /*
   Mat gray_image;
   gray_image.create(height, width, CV_8UC1);
   gray_image.data = h_imageOutput;
-  
-  Mat gray_image_opencv, grad_x, abs_grad_x;
-  cvtColor(image, gray_image_opencv, CV_BGR2GRAY);
-  Sobel(gray_image_opencv, grad_x, CV_8UC1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
-  convertScaleAbs(grad_x, abs_grad_x);
-  
-  imwrite("./outputs/1088273734.png",gray_image);
   */
-  cudaFree(d_dataRawImage);
-  cudaFree(d_imageOutput);
+  //Mat gray_image_opencv, grad_x, abs_grad_x;
+  //cvtColor(image, gray_image_opencv, CV_BGR2GRAY);
+  //h_imageOutput = gray_image_opencv.data;
+  sobelFilterSequential(imageInput, width, height, 3, GX, GY, imageOutput);
+
+  Mat imageSobel;
+  imageSobel.data = imageOutput;
+  //gray_image_opencv.data = h_imageOutput;
+
+  //Sobel(gray_image_opencv, grad_x, CV_8UC1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
+  //convertScaleAbs(grad_x, abs_grad_x);
+  
+  imwrite("./outputs/1088273734.png", imageSobel);
+  
+  //cudaFree(d_dataRawImage);
+  //cudaFree(d_imageOutput);
+
+  printf("Ya se puede descargar el archivo\n");
   
   return 0;
 }

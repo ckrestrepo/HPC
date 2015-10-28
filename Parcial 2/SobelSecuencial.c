@@ -70,7 +70,7 @@ int main()
 
     unsigned char *dataRawImage, *d_dataRawImage, *d_imageOutput, *h_imageOutput, *d_sobelOutput;
     Mat image;
-    image = imread("./inputs/img1.jpg", 1);
+    image = imread("./inputs/img5.jpg", 1);
 
     if(!image.data)
     {
