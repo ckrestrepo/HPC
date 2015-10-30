@@ -11,8 +11,9 @@ using namespace cv;
 
 int main()
 {
+  // variables de tiempo
   clock_t start, finish; 
-  double elapsedSequential;
+  double tiempoSecuencial;
 
   Mat image;
   image = imread("inputs/img1.jpg", 0);   // El cero significa que carga la imagen en escala de grises
@@ -45,9 +46,9 @@ int main()
 
     imwrite("./outputs/1088273734.png", imageOutput);
 
-    elapsedSequential = (((double) (finish - start)) / CLOCKS_PER_SEC );
-    cout<< "El proceso secuencial tomo: " << elapsedSequential << " en ejecutar\n "<< endl;
-    temp = temp + elapsedSequential;
+    tiempoSecuencial = (((double) (finish - start)) / CLOCKS_PER_SEC );
+    cout<< "El proceso secuencial tomo: " << tiempoSecuencial << " en ejecutar\n "<< endl;
+    temp = temp + tiempoSecuencial;
   }
   promedio = temp / 20;
   cout <<"El promedio de tiempo es de: " <<promedio << endl;

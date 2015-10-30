@@ -1,0 +1,185 @@
+Iteracion numero: 1
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.162164 segundos 
+Iteracion numero: 2
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.012841 segundos 
+Iteracion numero: 3
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.012827 segundos 
+Iteracion numero: 4
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.012809 segundos 
+Iteracion numero: 5
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.012851 segundos 
+Iteracion numero: 6
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013008 segundos 
+Iteracion numero: 7
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013105 segundos 
+Iteracion numero: 8
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.010901 segundos 
+Iteracion numero: 9
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013141 segundos 
+Iteracion numero: 10
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013095 segundos 
+Iteracion numero: 11
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013106 segundos 
+Iteracion numero: 12
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013074 segundos 
+Iteracion numero: 13
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013081 segundos 
+Iteracion numero: 14
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013091 segundos 
+Iteracion numero: 15
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013077 segundos 
+Iteracion numero: 16
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013054 segundos 
+Iteracion numero: 17
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013096 segundos 
+Iteracion numero: 18
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.01306 segundos 
+Iteracion numero: 19
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013067 segundos 
+Iteracion numero: 20
+Convolucion usando Memoria Global
+El tiempo paralelo fue de: 0.013082 segundos 
+El promedio de tiempo es de: 0.0203765
+
+Iteracion numero: 1
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008646 segundos 
+Iteracion numero: 2
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008607 segundos 
+Iteracion numero: 3
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008597 segundos 
+Iteracion numero: 4
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008628 segundos 
+Iteracion numero: 5
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008639 segundos 
+Iteracion numero: 6
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008659 segundos 
+Iteracion numero: 7
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008662 segundos 
+Iteracion numero: 8
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008623 segundos 
+Iteracion numero: 9
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008616 segundos 
+Iteracion numero: 10
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008668 segundos 
+Iteracion numero: 11
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.00864 segundos 
+Iteracion numero: 12
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008638 segundos 
+Iteracion numero: 13
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008633 segundos 
+Iteracion numero: 14
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008634 segundos 
+Iteracion numero: 15
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.00863 segundos 
+Iteracion numero: 16
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008611 segundos 
+Iteracion numero: 17
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.00863 segundos 
+Iteracion numero: 18
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008492 segundos 
+Iteracion numero: 19
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008374 segundos 
+Iteracion numero: 20
+Convolucion usando Memoria Constante
+El tiempo paralelo fue de: 0.008545 segundos 
+El promedio de tiempo es de: 0.0086086
+
+Iteracion numero: 1
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008726 segundos 
+Iteracion numero: 2
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008737 segundos 
+Iteracion numero: 3
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008705 segundos 
+Iteracion numero: 4
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008708 segundos 
+Iteracion numero: 5
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008722 segundos 
+Iteracion numero: 6
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008711 segundos 
+Iteracion numero: 7
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008738 segundos 
+Iteracion numero: 8
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008669 segundos 
+Iteracion numero: 9
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.00871 segundos 
+Iteracion numero: 10
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008731 segundos 
+Iteracion numero: 11
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008719 segundos 
+Iteracion numero: 12
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.00872 segundos 
+Iteracion numero: 13
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008719 segundos 
+Iteracion numero: 14
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008809 segundos 
+Iteracion numero: 15
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008835 segundos 
+Iteracion numero: 16
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008747 segundos 
+Iteracion numero: 17
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008725 segundos 
+Iteracion numero: 18
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008707 segundos 
+Iteracion numero: 19
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008459 segundos 
+Iteracion numero: 20
+Convolucion usando Memoria Compartida-Tiles
+El tiempo paralelo fue de: 0.008539 segundos 
+El promedio de tiempo es de: 0.0087068
