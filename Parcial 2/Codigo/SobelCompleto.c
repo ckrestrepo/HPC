@@ -119,15 +119,24 @@ __global__ void convolution2DSharedMemKernel(unsigned char *imageInput,unsigned 
     }
     __syncthreads();
 
-    int Pvalue = 0;
+    int PvalueX = 0;
+	int PvalueY = 0;
+	double SUM = 0;
     int y, x;
     for (y = 0; y < maskWidth; y++)
-        for (x = 0; x < maskWidth; x++)
-            Pvalue += N_ds[threadIdx.y + y][threadIdx.x + x] * M1[y * maskWidth + x];
+	{
+		for (x = 0; x < maskWidth; x++)
+		{
+			PvalueX += N_ds[threadIdx.y + y][threadIdx.x + x] * M1[y * maskWidth + x];
+			PvalueY += N_ds[threadIdx.y + y][threadIdx.x + x] * M2[y * maskWidth + x];
+		}
+	}
+        
     y = blockIdx.y * TILE_SIZE + threadIdx.y;
     x = blockIdx.x * TILE_SIZE + threadIdx.x;
+	SUM = sqrt(pow((double) PvalueX, 2) + pow((double) PvalueY, 2));
     if (y < height && x < width)
-        imageOutput[(y * width + x)] = clamp(Pvalue);
+        imageOutput[(y * width + x)] = clamp(SUM);
     __syncthreads();
 }
 
@@ -197,7 +206,7 @@ int main()
   //double tiempoSecuencial;
   int Mask_Width =  Mask_size;
   Mat image;
-  image = imread("inputs/img2.jpg",0);   // Con cero indico que la cargue en escala de grises
+  image = imread("inputs/img1.jpg",0);   // Con cero indico que la cargue en escala de grises
   // Opcion para el llamado a paralelo
   //int op = 1;
 
@@ -227,7 +236,7 @@ int main()
   cout<< "El tiempo secuencial fue de: " << tiempoSecuencial << " segundos "<< endl;
 */
 	start = clock();
-	KernelCalls(image,img,imgOut,h_Mask,v_Mask,Mask_Width,Row,Col,2);
+	KernelCalls(image,img,imgOut,h_Mask,v_Mask,Mask_Width,Row,Col,3);
 	finish = clock();
 	tiempoParalelo = (((double) (finish - start)) / CLOCKS_PER_SEC );
 	cout<< "El tiempo paralelo fue de: " << tiempoParalelo << " segundos "<< endl;
