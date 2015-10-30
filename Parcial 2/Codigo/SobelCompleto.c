@@ -28,13 +28,15 @@ __device__ unsigned char clamp(int value)
 
 
 // Memoria Global
-__global__ void convolution2DGlobalMemKernel(unsigned char *In,char *Mask, unsigned char *Out,int Mask_Width,int Rowimg,int Colimg)
+__global__ void convolution2DGlobalMemKernel(unsigned char *In,char *MaskX,char *MaskY, unsigned char *Out,int Mask_Width,int Rowimg,int Colimg)
 {
 
    unsigned int row = blockIdx.y*blockDim.y+threadIdx.y;
    unsigned int col = blockIdx.x*blockDim.x+threadIdx.x;
 
-   int Pvalue = 0;
+   int PvalueX = 0;
+   int PvalueY = 0;
+   double SUM = 0;
 
    int N_start_point_row = row - (Mask_Width/2);
    int N_start_point_col = col - (Mask_Width/2);
@@ -46,12 +48,15 @@ __global__ void convolution2DGlobalMemKernel(unsigned char *In,char *Mask, unsig
         if((N_start_point_col + j >=0 && N_start_point_col + j < Rowimg)
         &&(N_start_point_row + i >=0 && N_start_point_row + i < Colimg))
         {
-          Pvalue += In[(N_start_point_row + i)*Rowimg+(N_start_point_col + j)] * Mask[i*Mask_Width+j];
+          PvalueX += In[(N_start_point_row + i)*Rowimg+(N_start_point_col + j)] * MaskX[i*Mask_Width+j];
+		  PvalueY += In[(N_start_point_row + i)*Rowimg+(N_start_point_col + j)] * MaskY[i*Mask_Width+j];
         }
        }
    }
+   
+   SUM = sqrt(pow((double) PvalueX, 2) + pow((double) PvalueY, 2));
 
-   Out[row*Rowimg+col] = clamp(Pvalue);
+   Out[row*Rowimg+col] = clamp(SUM);
 
 }
 
@@ -123,23 +128,26 @@ __global__ void convolution2DSharedMemKernel(unsigned char *imageInput,unsigned 
 }
 
 // llamado a los diferentes kernels
-void KernelCalls(Mat image,unsigned char *In,unsigned char *Out,char *h_Mask,
+void KernelCalls(Mat image,unsigned char *In,unsigned char *Out,char *h_Mask,char *v_Mask,
   int Mask_Width,int Row,int Col, int op)
 {
   // Variables
   int Size_of_bytes =  sizeof(unsigned char)*Row*Col*image.channels();
   int Mask_size_bytes =  sizeof(char)*(Mask_size*Mask_size);
   unsigned char *d_In, *d_Out;
-  char *d_Mask;
+  char *d_Mask, *d2_Mask;
   float Blocksize=BLOCK_SIZE;
 
   // Reserva de memoria para el dispositivo
   cudaMalloc((void**)&d_In,Size_of_bytes);
   cudaMalloc((void**)&d_Out,Size_of_bytes);
   cudaMalloc((void**)&d_Mask,Mask_size_bytes);
+  cudaMalloc((void**)&d2_Mask,Mask_size_bytes);
 
   cudaMemcpy(d_In,In,Size_of_bytes,cudaMemcpyHostToDevice);
-  cudaMemcpy(d_Mask,h_Mask,Mask_size_bytes,cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Mask,h_Mask,Mask_size_bytes,cudaMemcpyHostToDevice); //Gx
+  cudaMemcpy(d2_Mask,v_Mask,Mask_size_bytes,cudaMemcpyHostToDevice); //Gy
+  
   cudaMemcpyToSymbol(M,h_Mask,Mask_size_bytes);// Usando memoria constante
 
   dim3 dimGrid(ceil(Row/Blocksize),ceil(Col/Blocksize),1);
@@ -149,7 +157,7 @@ void KernelCalls(Mat image,unsigned char *In,unsigned char *Out,char *h_Mask,
   {
     case 1:
       cout<<"Convolucion usando Memoria Global"<<endl;
-      convolution2DGlobalMemKernel<<<dimGrid,dimBlock>>>(d_In,d_Mask,d_Out,Mask_Width,Row,Col);
+      convolution2DGlobalMemKernel<<<dimGrid,dimBlock>>>(d_In,d_Mask, d2_Mask, d_Out,Mask_Width,Row,Col);
       break;
     case 2:
       cout<<"Convolucion usando Memoria Constante"<<endl;
@@ -192,7 +200,7 @@ int main()
   int Row = s.width;
   int Col = s.height;
   char h_Mask[] = {-1,0,1,-2,0,2,-1,0,1}; // Gx
-  //char v_Mask[] = {-1,-2,-1,0,0,0,1,2,1}; // Gy Mascara para el eje Y
+  char v_Mask[] = {-1,-2,-1,0,0,0,1,2,1}; // Gy Mascara para el eje Y
   
   unsigned char *img = (unsigned char*)malloc(sizeof(unsigned char)*Row*Col*image.channels());
   unsigned char *imgOut = (unsigned char*)malloc(sizeof(unsigned char)*Row*Col*image.channels());
@@ -213,55 +221,12 @@ int main()
   tiempoSecuencial = (((double) (finish - start)) / CLOCKS_PER_SEC );
   cout<< "El tiempo secuencial fue de: " << tiempoSecuencial << " segundos "<< endl;
 */
-  double promedio = 0, temp = 0;
-  for (int i = 1; i <= 20; ++i)
-  {
-    cout <<"Iteracion numero: " << i <<endl;
-    start = clock();
-    KernelCalls(image,img,imgOut,h_Mask,Mask_Width,Row,Col,1);
-    finish = clock();
-    tiempoParalelo = (((double) (finish - start)) / CLOCKS_PER_SEC );
-    cout<< "El tiempo paralelo fue de: " << tiempoParalelo << " segundos "<< endl;
-    temp = temp + tiempoParalelo;
-  }
-  
-  promedio = temp / 20;
-  cout <<"El promedio de tiempo es de: " <<promedio << endl <<endl;
-
-  //Inicializo para el siguiente kernel
-  promedio = 0, temp = 0;
-
-  for (int i = 1; i <= 20; ++i)
-  {
-    cout <<"Iteracion numero: " << i <<endl;
-    start = clock();
-    KernelCalls(image,img,imgOut,h_Mask,Mask_Width,Row,Col,2);
-    finish = clock();
-    tiempoParalelo = (((double) (finish - start)) / CLOCKS_PER_SEC );
-    cout<< "El tiempo paralelo fue de: " << tiempoParalelo << " segundos "<< endl;
-    temp = temp + tiempoParalelo;
-  }
-  
-  promedio = temp / 20;
-  cout <<"El promedio de tiempo es de: " <<promedio << endl <<endl;
-
-  //Inicializo para el siguiente kernel
-  promedio = 0, temp = 0;
-
-  for (int i = 1; i <= 20; ++i)
-  {
-    cout <<"Iteracion numero: " << i <<endl;
-    start = clock();
-    KernelCalls(image,img,imgOut,h_Mask,Mask_Width,Row,Col,3);
-    finish = clock();
-    tiempoParalelo = (((double) (finish - start)) / CLOCKS_PER_SEC );
-    cout<< "El tiempo paralelo fue de: " << tiempoParalelo << " segundos "<< endl;
-    temp = temp + tiempoParalelo;
-  }
-  
-  promedio = temp / 20;
-  cout <<"El promedio de tiempo es de: " <<promedio << endl;
-
+	start = clock();
+	KernelCalls(image,img,imgOut,h_Mask,v_Mask,Mask_Width,Row,Col,1);
+	finish = clock();
+	tiempoParalelo = (((double) (finish - start)) / CLOCKS_PER_SEC );
+	cout<< "El tiempo paralelo fue de: " << tiempoParalelo << " segundos "<< endl;
+ 
   Mat gray_image;
   gray_image.create(Col,Row,CV_8UC1);
   gray_image.data = imgOut;
