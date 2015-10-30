@@ -9,7 +9,8 @@
 #define TILE_SIZE  32
 #define BLOCK_SIZE 32
 
-__constant__ char M[Mask_size*Mask_size];
+__constant__ char M1[Mask_size*Mask_size];
+__constant__ char M2[Mask_size*Mask_size];
 
 using namespace std;
 using namespace cv;
@@ -66,8 +67,10 @@ __global__ void convolution2DConstantMemKernel(unsigned char *In,unsigned char *
    unsigned int row = blockIdx.y*blockDim.y+threadIdx.y;
    unsigned int col = blockIdx.x*blockDim.x+threadIdx.x;
 
-   int Pvalue = 0;
-
+   int PvalueX = 0;
+   int PvalueY = 0;
+   double SUM = 0;
+   
    int N_start_point_row = row - (Mask_Width/2);
    int N_start_point_col = col - (Mask_Width/2);
 
@@ -78,12 +81,13 @@ __global__ void convolution2DConstantMemKernel(unsigned char *In,unsigned char *
          if((N_start_point_col + j >=0 && N_start_point_col + j < Rowimg)
          &&(N_start_point_row + i >=0 && N_start_point_row + i < Colimg))
          {
-           Pvalue += In[(N_start_point_row + i)*Rowimg+(N_start_point_col + j)] * M[i*Mask_Width+j];
+           PvalueX += In[(N_start_point_row + i)*Rowimg+(N_start_point_col + j)] * M1[i*Mask_Width+j];
+		   PvalueY += In[(N_start_point_row + i)*Rowimg+(N_start_point_col + j)] * M2[i*Mask_Width+j];
          }
        }
     }
-
-   Out[row*Rowimg+col] = clamp(Pvalue);
+	SUM = sqrt(pow((double) PvalueX, 2) + pow((double) PvalueY, 2));
+	Out[row*Rowimg+col] = clamp(SUM);
 }
 
 // Memoria Compartida - Tiles
@@ -119,7 +123,7 @@ __global__ void convolution2DSharedMemKernel(unsigned char *imageInput,unsigned 
     int y, x;
     for (y = 0; y < maskWidth; y++)
         for (x = 0; x < maskWidth; x++)
-            Pvalue += N_ds[threadIdx.y + y][threadIdx.x + x] * M[y * maskWidth + x];
+            Pvalue += N_ds[threadIdx.y + y][threadIdx.x + x] * M1[y * maskWidth + x];
     y = blockIdx.y * TILE_SIZE + threadIdx.y;
     x = blockIdx.x * TILE_SIZE + threadIdx.x;
     if (y < height && x < width)
@@ -148,7 +152,8 @@ void KernelCalls(Mat image,unsigned char *In,unsigned char *Out,char *h_Mask,cha
   cudaMemcpy(d_Mask,h_Mask,Mask_size_bytes,cudaMemcpyHostToDevice); //Gx
   cudaMemcpy(d2_Mask,v_Mask,Mask_size_bytes,cudaMemcpyHostToDevice); //Gy
   
-  cudaMemcpyToSymbol(M,h_Mask,Mask_size_bytes);// Usando memoria constante
+  cudaMemcpyToSymbol(M1,h_Mask,Mask_size_bytes);// Usando memoria constante Gx
+  cudaMemcpyToSymbol(M2,v_Mask,Mask_size_bytes);// Usando memoria constante Gy
 
   dim3 dimGrid(ceil(Row/Blocksize),ceil(Col/Blocksize),1);
   dim3 dimBlock(Blocksize,Blocksize,1);
@@ -192,7 +197,7 @@ int main()
   //double tiempoSecuencial;
   int Mask_Width =  Mask_size;
   Mat image;
-  image = imread("inputs/img1.jpg",0);   // Con cero indico que la cargue en escala de grises
+  image = imread("inputs/img2.jpg",0);   // Con cero indico que la cargue en escala de grises
   // Opcion para el llamado a paralelo
   //int op = 1;
 
@@ -222,7 +227,7 @@ int main()
   cout<< "El tiempo secuencial fue de: " << tiempoSecuencial << " segundos "<< endl;
 */
 	start = clock();
-	KernelCalls(image,img,imgOut,h_Mask,v_Mask,Mask_Width,Row,Col,1);
+	KernelCalls(image,img,imgOut,h_Mask,v_Mask,Mask_Width,Row,Col,2);
 	finish = clock();
 	tiempoParalelo = (((double) (finish - start)) / CLOCKS_PER_SEC );
 	cout<< "El tiempo paralelo fue de: " << tiempoParalelo << " segundos "<< endl;
