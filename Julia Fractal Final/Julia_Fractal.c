@@ -61,7 +61,7 @@ int main()
 
 	Mat image;
 	
-	image = imread("./inputs/img1.jpg", 0);
+	image = imread("C:/Users/Camilo/Dropbox/UTP-Sistemas/Semestre2-2015/HPC/Repositorio/Julia Fractal Final/prueba.png");
 
 	if(!image.data)
 	{
@@ -79,7 +79,7 @@ int main()
 	imageInput = image.data;
 
 	cout << "El alto y ancho de la imagen tiene respectivamente " << width << " pixels por " << height << " pixels\n";
-
+/*
 	for (int i = 0; i < width; ++i)
 	{
 		for (int j = 0; j < height; ++j)
@@ -92,9 +92,9 @@ int main()
 			imageInput[offset*4 + 3] = 255;
 		}
 	}
+*/
+	//Mat imageFractal;
+  	//imageFractal.data = imageInput;
 
-	Mat imageFractal;
-  	imageFractal.data = imageInput;
-
-  	imwrite("./outputs/1088273734.png", imageFractal);
+  	//imwrite("./outputs/1088273734.png", imageFractal);
 }
