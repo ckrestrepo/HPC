@@ -5,6 +5,7 @@
 #include <highgui.h>
 #include <cv.h>
 
+#define DIM 40
 using namespace std;
 using namespace cv;
 
@@ -33,15 +34,11 @@ struct cuComplex
 };
 
 
-
-
-
 int julia(int x, int y)
 {
-	// El 580 es la dimension en X y en Y (alto y ancho)
 	const float scale = 1.5;
-	float jx = scale * (float)(580/2 - x)/(580/2);
-	float jy = scale * (float)(580/2 - y)/(580/2);
+	float jx = scale * (float)(DIM/2 - x)/(DIM/2);
+	float jy = scale * (float)(DIM/2 - y)/(DIM/2);
 	
 	cuComplex c(-0.8, 0.156);
 	cuComplex a(jx, jy);
@@ -55,13 +52,30 @@ int julia(int x, int y)
 	return 1;
 }
 
+void kernel(unsigned char *ptr)
+{
+	for (int i = 0; i < DIM; ++i)
+	{
+		for (int j = 0; j < DIM; ++j)
+		{
+			int offset = j + i*DIM;
+			int juliaValue = julia (j, i);
+			cout <<offset << ": " <<juliaValue <<endl;
+			ptr[offset] = 255 * juliaValue;
+			/*
+			ptr[offset*4 + 0] = 255 * juliaValue;
+			ptr[offset*4 + 1] = 0;
+			ptr[offset*4 + 2] = 0;
+			ptr[offset*4 + 3] = 255;*/
+		}
+	}
+}
+
 int main()
 {
 	unsigned char *imageInput;
 
-	Mat image;
-	
-	image = imread("C:/Users/Camilo/Dropbox/UTP-Sistemas/Semestre2-2015/HPC/Repositorio/Julia Fractal Final/prueba.png");
+	Mat image (DIM, DIM, CV_8UC1, Scalar(255));
 
 	if(!image.data)
 	{
@@ -79,22 +93,11 @@ int main()
 	imageInput = image.data;
 
 	cout << "El alto y ancho de la imagen tiene respectivamente " << width << " pixels por " << height << " pixels\n";
-/*
-	for (int i = 0; i < width; ++i)
-	{
-		for (int j = 0; j < height; ++j)
-		{
-			int offset = j + i*width;
-			int juliaValue = julia (j, i);
-			imageInput[offset*4 + 0] = 255 * juliaValue;
-			imageInput[offset*4 + 1] = 0;
-			imageInput[offset*4 + 2] = 0;
-			imageInput[offset*4 + 3] = 255;
-		}
-	}
-*/
-	//Mat imageFractal;
-  	//imageFractal.data = imageInput;
-
-  	//imwrite("./outputs/1088273734.png", imageFractal);
+	
+	kernel(imageInput);
+	
+	Mat imageFractal;
+	imageFractal.create(DIM,DIM,CV_8UC1);
+  	imageFractal.data = imageInput;
+  	imwrite("./outputs/1088273734.png", imageFractal);
 }
