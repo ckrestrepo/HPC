@@ -52,7 +52,7 @@ int julia(int x, int y)
 	return 1;
 }
 
-void kernel(unsigned char *ptr)
+void juliaCPU(unsigned char *ptr)
 {
 	for (int i = 0; i < DIM; ++i)
 	{
@@ -62,11 +62,6 @@ void kernel(unsigned char *ptr)
 			int juliaValue = julia (j, i);
 			cout <<offset << ": " <<juliaValue <<endl;
 			ptr[offset] = 255 * juliaValue;
-			/*
-			ptr[offset*4 + 0] = 255 * juliaValue;
-			ptr[offset*4 + 1] = 0;
-			ptr[offset*4 + 2] = 0;
-			ptr[offset*4 + 3] = 255;*/
 		}
 	}
 }
@@ -94,7 +89,7 @@ int main()
 
 	cout << "El alto y ancho de la imagen tiene respectivamente " << width << " pixels por " << height << " pixels\n";
 	
-	kernel(imageInput);
+	juliaCPU(imageInput);
 	
 	Mat imageFractal;
 	imageFractal.create(DIM,DIM,CV_8UC1);
