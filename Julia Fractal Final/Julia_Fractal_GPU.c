@@ -5,7 +5,7 @@
 #include <highgui.h>
 #include <cv.h>
 
-#define DIM 400
+#define DIM 200
 #define BLOCK_SIZE 32
 using namespace std;
 using namespace cv;
@@ -59,29 +59,30 @@ __device__ int juliaGPU(int x, int y)
 /***************************************************/
 /************** SECCION PARALELA *******************/
 /***************************************************/
-__global__ void KernelGPUJulia(unsigned char *imgIn, unsigned char *imgOut, int width, int height)
+__global__ void KernelGPUJulia(unsigned char *imgIn, int width, int height)
 {
-	unsigned int row = blockIdx.y;//*blockDim.y+threadIdx.y;
-    unsigned int col = blockIdx.x;//*blockDim.x+threadIdx.x;
+	unsigned int row = blockIdx.y*blockDim.y+threadIdx.y;
+    unsigned int col = blockIdx.x*blockDim.x+threadIdx.x;
+
     int offset = col + row * DIM;
 
-    // Calculamos el valor de la posicion
-    int juliaValue = juliaGPU(col, row);
-    //imgIn[offset] = 255 * juliaValue;
-    imgOut[offset] = 255 * juliaValue;
+    if ((row < DIM) && (col < DIM))
+    {
+    	int juliaValue = juliaGPU(col, row);
+    	imgIn[offset] = 255 * juliaValue;
+    }
 }
 
 
 // Funcion que llama Multiplicacion Kernel sin Tiles
-void JuliaKernel(Mat imagen, unsigned char *imgInput, unsigned char *imgOutput, int ancho, int alto)
+void JuliaKernel(Mat imagen, unsigned char *imgInput, int ancho, int alto)
 {
 	//variables para la GPU
 	int tam_bytes =  sizeof(unsigned char)*ancho*alto*imagen.channels();
-	unsigned char *d_Input, *d_Output;		// Para la GPU "device"
+	unsigned char *d_Input;		// Para la GPU "device"
 
 	//Reservo Memoria en el dispositivo
 	cudaMalloc((void**)&d_Input,tam_bytes);
-	cudaMalloc((void**)&d_Output,tam_bytes);
 
 	//Copio los datos al dispositivo
 	cudaMemcpy(d_Input,imgInput,tam_bytes,cudaMemcpyHostToDevice);
@@ -91,14 +92,13 @@ void JuliaKernel(Mat imagen, unsigned char *imgInput, unsigned char *imgOutput, 
 	dim3 dimBlock(Blocksize, Blocksize,1);
 	dim3 dimGrid(ceil((float)ancho/dimBlock.x), ceil((float)alto/dimBlock.y),1);
 	
-	KernelGPUJulia<<< dimGrid, dimBlock >>>(d_Input, d_Output, ancho, alto);	
+	KernelGPUJulia<<< dimGrid, dimBlock >>>(d_Input, ancho, alto);
 
 	cudaDeviceSynchronize();
 
-	cudaMemcpy (imgOutput,d_Output,tam_bytes,cudaMemcpyDeviceToHost);
+	cudaMemcpy (imgInput,d_Input,tam_bytes,cudaMemcpyDeviceToHost);
 
 	cudaFree(d_Input);
-	cudaFree(d_Output);
 }
 
 /*************************************************/
@@ -106,8 +106,12 @@ void JuliaKernel(Mat imagen, unsigned char *imgInput, unsigned char *imgOutput, 
 /*************************************************/
 
 int main()
-{
-	unsigned char *imageInput, *imageOutput;
+{	
+	// Variables
+	unsigned char *imageInput;
+	clock_t inicio, final;
+	double tiempo;
+	double cont = 0, promedio = 0;
 
 	Mat image (DIM, DIM, CV_8UC1, Scalar(255));
 
@@ -123,17 +127,23 @@ int main()
 	int size = sizeof(unsigned char) * width * height * image.channels();
 
 	imageInput = (unsigned char*)malloc(size);
-	imageOutput = (unsigned char*)malloc(size);
 
 	imageInput = image.data;
-
-	cout << "El alto y ancho de la imagen tiene respectivamente " << width << " pixels por " << height << " pixels\n";
 	
-	JuliaKernel(image, imageInput, imageOutput, width, height);
-	//juliaCPU(imageInput);
+
+	for (int i = 0; i < 20; ++i)
+	{
+		inicio = clock();		
+		JuliaKernel(image, imageInput, width, height);		
+		final = clock();
+		tiempo = (((double) (final - inicio)) / CLOCKS_PER_SEC );
+		cont = cont + tiempo;
+	}
+	promedio = cont / 20;
+	cout <<"El tiempo paralelo promedio para una dimension de " << DIM << "x" <<DIM <<" es de: " <<promedio <<" segundos.\n";
 	
 	Mat imageFractal;
 	imageFractal.create(DIM,DIM,CV_8UC1);
-  	imageFractal.data = imageOutput;
+  	imageFractal.data = imageInput;
   	imwrite("./outputs/1088273734.png", imageFractal);
 }
